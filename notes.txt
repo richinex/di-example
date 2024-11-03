@@ -1,0 +1,31 @@
+go mod init di-example
+go run main.go
+
+Expected output will be something like:
+
+=== Struct Inspection Results ===
+Struct: Injectable
+Fields:
+  - UserService:
+    Type: interface {}
+    Exported: true
+    Tags:
+      di: userService
+    Value: &{USER-}
+  - EmailService:
+    Type: interface {}
+    Exported: true
+    Tags:
+      di: emailService
+    Value: &{smtp.example.com}
+  - ConfigService:
+    Type: interface {}
+    Exported: true
+    Tags:
+      di: configService
+    Value: &{development}
+
+=== Testing Injected Services ===
+UserService result: USER-123
+Sending email to test@example.com via smtp.example.com: Hello from DI!
+ConfigService result: Environment: development
