@@ -1,71 +1,86 @@
 package main
 
 import (
-    "fmt"
-    "log"
-
-    "di-example/internal/models"
-    "di-example/internal/services"
-    "di-example/pkg/container"
-    "di-example/pkg/reflection"
+	"di-example/internal/models"
+	"di-example/internal/services"
+	"di-example/pkg/container"
+	"di-example/pkg/logger"
+	"di-example/pkg/reflection"
+	"fmt"
 )
 
 func main() {
+    // Initialize logger
+    logger.Initialize(true) // true for development mode with colors
+    defer logger.Sync()
+
+    log := logger.Get()
+    log.Info("Starting application")
+
     // Create new DI container
+    log.Info("Initializing DI container")
     di := container.NewContainer()
 
     // Create services
+    log.Info("Creating services")
     userService := services.NewUserService()
     emailService := services.NewEmailService()
     configService := services.NewConfigService()
 
-    // Register services in container
+    // Register services
+    log.Info("Registering services in container")
     if err := di.Register("userService", userService); err != nil {
-        log.Fatalf("Failed to register userService: %v", err)
+        log.Fatalw("Failed to register userService", "error", err)
     }
     if err := di.Register("emailService", emailService); err != nil {
-        log.Fatalf("Failed to register emailService: %v", err)
+        log.Fatalw("Failed to register emailService", "error", err)
     }
     if err := di.Register("configService", configService); err != nil {
-        log.Fatalf("Failed to register configService: %v", err)
+        log.Fatalw("Failed to register configService", "error", err)
     }
 
     // Create injectable struct
+    log.Info("Creating injectable struct")
     injectable := &models.Injectable{}
 
     // Inject dependencies
+    log.Info("Injecting dependencies")
     if err := di.InjectStruct(injectable); err != nil {
-        log.Fatalf("Failed to inject dependencies: %v", err)
+        log.Fatalw("Failed to inject dependencies", "error", err)
     }
 
     // Create reflection inspector
+    log.Info("Creating reflection inspector")
     inspector := reflection.NewInspector()
 
     // Inspect the injectable struct
+    log.Info("Inspecting injectable struct")
     info, err := inspector.InspectStruct(injectable)
     if err != nil {
-        log.Fatalf("Failed to inspect struct: %v", err)
+        log.Fatalw("Failed to inspect struct", "error", err)
     }
 
     // Print inspection results
-    fmt.Println("=== Struct Inspection Results ===")
+    log.Info("=== Struct Inspection Results ===")
     fmt.Println(inspector.PrettyPrint(info))
 
-    // Demonstrate usage of injected services
-    fmt.Println("\n=== Testing Injected Services ===")
+    // Test services
+    log.Info("=== Testing Injected Services ===")
 
-    // Test UserService
     if us, ok := injectable.UserService.(services.UserService); ok {
-        fmt.Printf("UserService result: %s\n", us.GetUser(123))
+        result := us.GetUser(123)
+        log.Infow("Tested UserService", "result", result)
     }
 
-    // Test EmailService
     if es, ok := injectable.EmailService.(services.EmailService); ok {
-        es.SendEmail("test@example.com", "Hello from DI!")
+        err := es.SendEmail("test@example.com", "Hello from DI!")
+        log.Infow("Tested EmailService", "error", err)
     }
 
-    // Test ConfigService
     if cs, ok := injectable.ConfigService.(services.ConfigService); ok {
-        fmt.Printf("ConfigService result: %s\n", cs.GetConfig())
+        result := cs.GetConfig()
+        log.Infow("Tested ConfigService", "result", result)
     }
+
+    log.Info("Application completed successfully")
 }
