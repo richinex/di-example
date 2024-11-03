@@ -27,6 +27,10 @@ func main() {
     emailService := services.NewEmailService()
     configService := services.NewConfigService()
 
+	// Inversion of Control (IoC)
+	// The Container manages service lifecycle
+	// Services are registered and resolved through the container
+
     // Register services
     log.Info("Registering services in container")
     if err := di.Register("userService", userService); err != nil {
@@ -44,6 +48,9 @@ func main() {
     injectable := &models.Injectable{}
 
     // Inject dependencies
+	// Dependency Injection
+	// Field injection through struct tags
+	// Resolution of dependencies
     log.Info("Injecting dependencies")
     if err := di.InjectStruct(injectable); err != nil {
         log.Fatalw("Failed to inject dependencies", "error", err)
